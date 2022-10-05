@@ -1,0 +1,128 @@
+-- Sql_day2_task1_1
+
+SELECT
+  r.region_id,
+  r.name AS region_name,
+  COUNT (DISTINCT t.trip_id) AS cnt_trip_region
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info` AS s
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_regions` AS r
+ON
+  s.region_id = r.region_id
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips` AS t
+ON
+  t.start_station_id = s.station_id
+GROUP BY 1,2;
+
+-- Sql_day2_task1_2
+SELECT
+  s.station_id,
+  s.name AS station_name,
+  r.region_id AS region_id,
+  r.name AS region_name,
+  COUNT (DISTINCT t.trip_id) AS cnt_trip_station,
+  COUNT (DISTINCT t.trip_id)/cnt_trip_region AS pct_trip_station
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info` AS s
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_regions` AS r
+ON
+  s.region_id = r.region_id
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips` AS t
+ON
+  t.start_station_id = s.station_id
+JOIN
+  `keen-genre-345705.gigih_project.sql_day2_task1_1` AS rs
+ON
+  r.region_id = rs.region_id
+GROUP BY
+  1,
+  2,
+  3,
+  4,
+  cnt_trip_region
+HAVING
+  region_id = 3
+ORDER BY
+  1 ASC
+LIMIT
+  7;
+
+-- Sql_day2_task2
+SELECT
+  trip_id,
+  start_date AS timestamp,
+  start_station_name AS station_name,
+  'Started' AS trip_status
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips`
+UNION ALL
+SELECT
+  trip_id,
+  end_date AS timestamp,
+  end_station_name AS station_name,
+  'Ended' AS trip_status
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips`
+ORDER BY
+  trip_id,
+  timestamp ASC
+LIMIT
+  8;
+
+-- Sql_day2_task3
+SELECT
+  a.trip_id,
+  a.start_date,
+  a.start_station_name,
+  b.end_date,
+  b.end_station_name 
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips` AS a
+INNER JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips` AS b
+ON a.trip_id = b.trip_id
+GROUP BY 1,2,3,4,5
+ORDER BY trip_id ASC
+LIMIT 8; 
+
+-- Sql_day2_task4 (Belum Selesai)
+SELECT
+  EXTRACT (DATE FROM t.start_date) AS start_date,
+  s.station_id,
+  s.name AS station_name,
+  r.region_id AS region_id,
+  r.name AS region_name,
+  t.duration_sec AS estimated_trip,
+  t.subscriber_type AS subs_type,
+  COUNT (DISTINCT t.trip_id) AS cnt_trip_station
+FROM
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info` AS s
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_regions` AS r
+ON
+  s.region_id = r.region_id
+LEFT JOIN
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips` AS t
+ON
+  s.station_id = t.start_station_id
+LEFT JOIN
+  `keen-genre-345705.gigih_project.gg-data_bikeshare_graffti_insiden` AS a
+ON
+  r.name = a.string_field_0
+GROUP BY
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7
+HAVING
+  r.region_id = 3
+  AND start_date IS NOT NULL;
+
+
